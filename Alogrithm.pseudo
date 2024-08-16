@@ -1,0 +1,136 @@
+// Step 1: Initialize the React Project
+// Create a new React project using `create-react-app`.
+// Set up the project structure with folders: components, assets, styles.
+
+// Step 2: Set Up State Management in App Component
+function App() {
+    // Step 2.1: Initialize state variables
+    const [employees, setEmployees] = useState([]); // Array to store employee data
+    const [searchQuery, setSearchQuery] = useState(''); // String for search input
+    const [isEditing, setIsEditing] = useState(false); // Boolean to track editing mode
+    const [currentEmployee, setCurrentEmployee] = useState(null); // Object for employee being edited
+  
+    // Step 2.2: Load employee data from localStorage on initial render
+    useEffect(() => {
+      loadEmployeesFromStorage();
+    }, []);
+  
+    // Step 6: Manage Local Storage
+    function loadEmployeesFromStorage() {
+      const storedEmployees = JSON.parse(localStorage.getItem('employees'));
+      if (storedEmployees) setEmployees(storedEmployees);
+    }
+  
+    useEffect(() => {
+      saveEmployeesToStorage();
+    }, [employees]);
+  
+    function saveEmployeesToStorage() {
+      localStorage.setItem('employees', JSON.stringify(employees));
+    }
+  
+    // Step 3: EmployeeForm Component Logic
+    function handleInputChange(event) {
+      const { name, value } = event.target;
+      setCurrentEmployee({ ...currentEmployee, [name]: value });
+    }
+  
+    function handleSubmit(event) {
+      event.preventDefault();
+  
+      if (isEditing) {
+        // Update existing employee
+        const updatedEmployees = employees.map(emp =>
+          emp.id === currentEmployee.id ? currentEmployee : emp
+        );
+        setEmployees(updatedEmployees);
+        setIsEditing(false);
+      } else {
+        // Add new employee
+        const newEmployee = {
+          ...currentEmployee,
+          id: Date.now(), // Generate a unique ID
+        };
+        setEmployees([...employees, newEmployee]);
+      }
+  
+      setCurrentEmployee(null); // Clear form
+    }
+  
+    function handleCancelEdit() {
+      setCurrentEmployee(null); // Clear form
+      setIsEditing(false); // Exit edit mode
+    }
+  
+    // Step 4: EmployeeList Component Logic
+    function handleDelete(employeeId) {
+      const updatedEmployees = employees.filter(emp => emp.id !== employeeId);
+      setEmployees(updatedEmployees);
+    }
+  
+    function handleEdit(employeeId) {
+      const employeeToEdit = employees.find(emp => emp.id === employeeId);
+      setCurrentEmployee(employeeToEdit);
+      setIsEditing(true);
+    }
+  
+    // Step 5: Search Functionality
+    function handleSearchChange(event) {
+      setSearchQuery(event.target.value);
+    }
+  
+    function getFilteredEmployees() {
+      return employees.filter(emp =>
+        emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        emp.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        emp.id.toString().includes(searchQuery)
+      );
+    }
+  
+    // Step 7: EmployeeCard Component Logic
+    function handleEditClick(employeeId) {
+      handleEdit(employeeId); // Trigger edit mode for selected employee
+    }
+  
+    function handleDeleteClick(employeeId) {
+      handleDelete(employeeId); // Trigger delete for selected employee
+    }
+  
+    // Step 8: Notifications (Optional)
+    function showNotification(message, type) {
+      // Display notification (success or error)
+      // Hide notification after a few seconds
+    }
+  
+    // Step 9: Ensure Responsiveness
+    // Use CSS media queries to handle different screen sizes
+  
+    // Step 10: Finalize and Test
+    // Test CRUD operations, search functionality, and data persistence
+    // Verify responsiveness and user experience
+  
+    return (
+      <div className="App">
+        {/* Components */}
+        <SearchBar searchQuery={searchQuery} onSearchChange={handleSearchChange} />
+        <EmployeeForm
+          employee={currentEmployee}
+          onChange={handleInputChange}
+          onSubmit={handleSubmit}
+          onCancel={handleCancelEdit}
+          isEditing={isEditing}
+        />
+        <EmployeeList
+          employees={getFilteredEmployees()}
+          onEdit={handleEditClick}
+          onDelete={handleDeleteClick}
+        />
+        {/* Notification Component (Optional) */}
+        {/* Footer and other UI components */}
+      </div>
+    );
+  }
+  
+  // Step 11: Deployment
+  // Push final code to GitHub and deploy the app
+  
