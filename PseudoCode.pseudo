@@ -1,104 +1,136 @@
-Pseudocode for React Employee App
+// Step 1: Initialize the React Project
+// Create a new React project using `create-react-app`.
+// Set up the project structure with folders: components, assets, styles.
 
-//Main Components:
-1. App Component
-
-    Manage global state for employees.
-    Render the main layout and child components.
-
-
-2. EmployeeList Component
-
-    Display a list of employees.
-    Include buttons for editing and deleting employees.
-
-
-3. EmployeeForm Component
-
-Handle form inputs for adding and updating employee details.
-Include fields: Name, Surname, Email, Position, Department, Phone Number, Image, Start Date.
-
-
-4. SearchBar Component
-
-Provide input for searching employees based on criteria like name, surname, ID, etc.
-
-
-5. EmployeeCard Component
-
-Render individual employee details in a card format.
-
-
-6. Notification Component
-
-Display success or error messages when operations (CRUD) are performed.
-
-
-//State Management:
-1. useState Hooks
-
-    employees - Store employee data.
-    searchQuery - Store the current search input.
-    isEditing - Track if the form is in edit mode.
-
-
-2. useEffect Hook
-
-    Retrieve employee data from localStorage on initial render.
-    Save updated employee data to localStorage whenever employees state changes.
-
-
-//Functionality:
-1. Add Employee
-
-    Function to add a new employee to the employees state.
-    Update localStorage with the new list of employees.
-
-2. Edit Employee
-
-    Set the form inputs with the selected employee's data.
-    Update the employee details in the employees state after editing.
-    Save updated data to localStorage.
-
-
-3. Delete Employee
-
-    Remove the selected employee from the employees state.
-    Update localStorage with the new list of employees.
-
-
-4. Search Employee
-
-    Filter employees based on the searchQuery input.
-    Update the displayed list of employees.
-
-
-5. Responsive Design
-
-    Use CSS media queries to ensure the layout adapts to different screen sizes.
-    Ensure inputs and elements remain properly aligned and functional on all devices.
-
-//Layout Structure:
-1.Header
-
-    Include the title of the app and the SearchBar component.
-
-
-2. Main Content
-
-    Display EmployeeForm on one side.
-    Display EmployeeList on the other side.
-
-3.Footer
-
-Include any additional information or links.
-
-
-//Workflow:
-    1.Render App component.
-    2.On initial load, fetch employee data from localStorage.
-    3.Display EmployeeList and EmployeeForm side by side.
-    4.Handle CRUD operations through EmployeeForm.
-    5.Use SearchBar to filter and display employees in EmployeeList.
-    6.Show notifications on successful or failed operations.
-    7.nsure the design remains responsive across different device sizes.
+// Step 2: Set Up State Management in App Component
+function App() {
+    // Step 2.1: Initialize state variables
+    const [employees, setEmployees] = useState([]); // Array to store employee data
+    const [searchQuery, setSearchQuery] = useState(''); // String for search input
+    const [isEditing, setIsEditing] = useState(false); // Boolean to track editing mode
+    const [currentEmployee, setCurrentEmployee] = useState(null); // Object for employee being edited
+  
+    // Step 2.2: Load employee data from localStorage on initial render
+    useEffect(() => {
+      loadEmployeesFromStorage();
+    }, []);
+  
+    // Step 6: Manage Local Storage
+    function loadEmployeesFromStorage() {
+      const storedEmployees = JSON.parse(localStorage.getItem('employees'));
+      if (storedEmployees) setEmployees(storedEmployees);
+    }
+  
+    useEffect(() => {
+      saveEmployeesToStorage();
+    }, [employees]);
+  
+    function saveEmployeesToStorage() {
+      localStorage.setItem('employees', JSON.stringify(employees));
+    }
+  
+    // Step 3: EmployeeForm Component Logic
+    function handleInputChange(event) {
+      const { name, value } = event.target;
+      setCurrentEmployee({ ...currentEmployee, [name]: value });
+    }
+  
+    function handleSubmit(event) {
+      event.preventDefault();
+  
+      if (isEditing) {
+        // Update existing employee
+        const updatedEmployees = employees.map(emp =>
+          emp.id === currentEmployee.id ? currentEmployee : emp
+        );
+        setEmployees(updatedEmployees);
+        setIsEditing(false);
+      } else {
+        // Add new employee
+        const newEmployee = {
+          ...currentEmployee,
+          id: Date.now(), // Generate a unique ID
+        };
+        setEmployees([...employees, newEmployee]);
+      }
+  
+      setCurrentEmployee(null); // Clear form
+    }
+  
+    function handleCancelEdit() {
+      setCurrentEmployee(null); // Clear form
+      setIsEditing(false); // Exit edit mode
+    }
+  
+    // Step 4: EmployeeList Component Logic
+    function handleDelete(employeeId) {
+      const updatedEmployees = employees.filter(emp => emp.id !== employeeId);
+      setEmployees(updatedEmployees);
+    }
+  
+    function handleEdit(employeeId) {
+      const employeeToEdit = employees.find(emp => emp.id === employeeId);
+      setCurrentEmployee(employeeToEdit);
+      setIsEditing(true);
+    }
+  
+    // Step 5: Search Functionality
+    function handleSearchChange(event) {
+      setSearchQuery(event.target.value);
+    }
+  
+    function getFilteredEmployees() {
+      return employees.filter(emp =>
+        emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        emp.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        emp.id.toString().includes(searchQuery)
+      );
+    }
+  
+    // Step 7: EmployeeCard Component Logic
+    function handleEditClick(employeeId) {
+      handleEdit(employeeId); // Trigger edit mode for selected employee
+    }
+  
+    function handleDeleteClick(employeeId) {
+      handleDelete(employeeId); // Trigger delete for selected employee
+    }
+  
+    // Step 8: Notifications (Optional)
+    function showNotification(message, type) {
+      // Display notification (success or error)
+      // Hide notification after a few seconds
+    }
+  
+    // Step 9: Ensure Responsiveness
+    // Use CSS media queries to handle different screen sizes
+  
+    // Step 10: Finalize and Test
+    // Test CRUD operations, search functionality, and data persistence
+    // Verify responsiveness and user experience
+  
+    return (
+      <div className="App">
+        {/* Components */}
+        <SearchBar searchQuery={searchQuery} onSearchChange={handleSearchChange} />
+        <EmployeeForm
+          employee={currentEmployee}
+          onChange={handleInputChange}
+          onSubmit={handleSubmit}
+          onCancel={handleCancelEdit}
+          isEditing={isEditing}
+        />
+        <EmployeeList
+          employees={getFilteredEmployees()}
+          onEdit={handleEditClick}
+          onDelete={handleDeleteClick}
+        />
+        {/* Notification Component (Optional) */}
+        {/* Footer and other UI components */}
+      </div>
+    );
+  }
+  
+  // Step 11: Deployment
+  // Push final code to GitHub and deploy the app
+  
